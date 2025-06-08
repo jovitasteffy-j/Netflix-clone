@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .background {
+      min-height: 100vh;
+      position: relative;
+      background:
+        linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.05), transparent),
+        linear-gradient(135deg, #1a1a1a, #2c2c2c);
+      background-blend-mode: lighten;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+    }
+
+    .logo {
+      color: #e50914;
+      font-size: 2.5rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .sign-in-button {
+      background-color: white;
+      color: black;
+      border: none;
+      padding: 8px 20px;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .sign-in-button:hover {
+      background-color: #f2f2f2;
+    }
+
+    .menu {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      background-color: #111;
+      color: #ccc;
+      font-size: 1rem;
+      padding: 10px 30px;
+      border-radius: 999px;
+      width: fit-content;
+      margin: 20px auto;
+    }
+
+    .menu span {
+      cursor: pointer;
+    }
+
+    .menu span:hover {
+      color: white;
+    }
+
+    .video-section {
+      position: relative;
+      width: 90%;
+      height: 480px;
+      overflow: hidden;
+      margin: 30px auto;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Use <video> instead of iframe for MP4 playback */
+    .video-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+      z-index: 0;
+    }
+
+    .video-section iframe {
+      /* Removed iframe styles since we're not using iframe anymore */
+      display: none;
+    }
+
+    .video-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 30%, transparent 100%);
+      z-index: 1;
+    }
+
+    .overlay-content {
+      position: absolute;
+      top: 50%;
+      left: 5%;
+      transform: translateY(-50%);
+      z-index: 2;
+    }
+
+    .overlay-content h1 {
+      font-size: 3rem;
+      color: #94ff50;
+      font-family: Georgia, serif;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 10px black;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .overlay-content input,
+    .overlay-content button {
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .overlay-content input {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+    }
+
+    .overlay-content button {
+      background-color: #e50914;
+      color: white;
+      font-size: 1rem;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    .overlay-content p {
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+    .movie-info-box {
+      width: 100%;
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .movie-info-box h2 {
+      margin: 0 0 10px 0;
+      font-size: 2rem;
+      color: #fff;
+    }
+
+    .movie-info-box .subtitle {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    .movie-info-box p {
+      margin: 10px 0;
+    }
+
+    .more-details-heading,
+    .you-may-also-like-heading {
+      max-width: 1000px;
+      margin: 40px auto 10px;
+      padding: 0 30px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+    }
+
+    .details-grid {
+      max-width: 1000px;
+      margin: 10px auto 50px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 0 30px;
+    }
+
+    .details-box {
+      flex: 1;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .details-box p {
+      font-size: 0.95rem;
+      color: #ddd;
+    }
+
+    .details-box strong {
+      color: white;
+      font-size: 1rem;
+    }
+
+    .scroll-wrapper {
+      position: relative;
+      max-width: 1000px;
+      margin: 10px auto 60px;
+      display: flex;
+      align-items: center;
+    }
+
+    .arrow {
+      width: 30px;
+      height: 100%;
+      min-height: 220px;
+      background-color: #3a3131;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      user-select: none;
+      border-radius: 12px;
+      z-index: 2;
+      transition: background-color 0.3s ease;
+    }
+
+    .arrow:hover {
+      background-color: #4a3f3f;
+    }
+
+    .left-arrow {
+      margin-right: 10px;
+    }
+
+    .right-arrow {
+      margin-left: 10px;
+    }
+
+    .recommendation-scroll {
+      max-width: 1000px;
+      flex: 1 1 auto;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      white-space: nowrap;
+      display: flex;
+      gap: 20px;
+      scrollbar-width: none;
+    }
+
+    .recommendation-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .recommendation-scroll img {
+      height: 220px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .recommendation-scroll img:hover {
+      transform: scale(1.05);
+    }
+
+    .netflix-discover-banner {
+      position: relative;
+      max-width: 1000px;
+      margin: 20px auto;
+      border-radius: 20px;
+      overflow: hidden;
+      background-image: url('images/img15.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .netflix-discover-overlay {
+      background: rgba(0, 0, 0, 0.6);
+      width: 100%;
+      height: 100%;
+      padding: 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 20px;
+    }
+
+    .netflix-discover-overlay h2 {
+      margin: 0;
+      max-width: 70%;
+      font-size: 1.2rem;
+    }
+
+    .netflix-discover-overlay button {
+      background-color: transparent;
+      border: 2px solid white;
+      color: white;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .netflix-discover-overlay button:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .join-now-footer {
+      display: flex;
+      justify-content: center;
+      background-color: transparent;
+      padding: 30px 0;
+    }
+
+    .join-now-footer button {
+      background-color: #e50914;
+      color: rgb(238, 229, 229);
+      font-size: 1.1rem;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .join-now-footer button:hover {
+      background-color: #ff1a1a;
+    }
+
+    .netflix-footer {
+      background-color: #141414;
+      color: #999;
+      padding: 40px 60px;
+      font-size: 14px;
+    }
+
+    .netflix-footer p {
+      margin-bottom: 20px;
+    }
+
+    .netflix-footer a {
+      color: #999;
+      text-decoration: none;
+    }
+
+    .netflix-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .footer-links ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 20px 20px 0;
+    }
+
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+
+    .language-select button {
+      background-color: transparent;
+      border: 1px solid #999;
+      color: #999;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .language-select {
+      margin: 20px 0;
+    }
+
+    .country-name,
+    .recaptcha-note {
+      margin: 10px 0;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+
+    <div class="header">
+      <div class="logo">NETFLIX</div>
+      <a href="https://www.netflix.com/in/login?nextpage=https%3A%2F%2Fwww.netflix.com%2Fin%2Ftitle%2F70302193" style="position: absolute; top: 20px; right: 20px; color: white; text-decoration: none; font-weight: bold;">Sign In</a>
+
+    </div>
+
+    <div class="menu">
+      <span onclick="document.getElementById('you-may-also-like').scrollIntoView({ behavior: 'smooth' })">More to Watch</span>
+      <span onclick="document.getElementById('plans-section').scrollIntoView({ behavior: 'smooth' })">Plans</span>
+    </div>
+    
+
+    <div class="video-section">
+      <div class="video-overlay"></div>
+      <video class="video-bg" autoplay muted loop playsinline>
+        <source src="video/hasee toh phasee trailer.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="overlay-content">
+        <h1>Hasee Toh Phasee</h1>
+        <div class="form-group">
+          <input type="email" id="email-input" placeholder="Email address" />
+          <button id="join-button">Join now</button>
+        </div>
+        <p>Endless entertainment starting at ₹149</p>
+      </div>
+    </div>
+
+    <div class="movie-info-box">
+      <h2>Hasee Toh Phasee</h2>
+      <div class="subtitle">2014 • U/A 16+ • Comedy</div>
+      <p>Nikhil is tasked with keeping his fiancée's troublemaking sister, Meeta, from ruining his wedding. But in the process, the two become inseparable.</p>
+      <p><strong>Starring:</strong> <span style="font-size: 0.9rem;">Sidharth Malhotra, Parineeti Chopra, and Adah Sharma</span></p>
+    </div>
+
+    <div class="more-details-heading">More Details</div>
+
+    <div class="details-grid">
+      <div class="details-box">
+        <p><strong>Watch offline</strong><br>Available to download</p>
+        <p><strong>Genres</strong><br>Hindi-Language Movies, Bollywood Movies, Romantic Comedies, Drama Movies, Comedy Movies, and Romantic Movies</p>
+        <p><strong>This show is …</strong><br>Quirky, Romantic, Dramedy, Wedding, Bollywood, Opposites-Attract, and Movie</p>
+      </div>
+      <div class="details-box">
+        <p><strong>Audio</strong><br>Hindi [Original]</p>
+        <p><strong>Subtitles</strong><br>English</p>
+      </div>
+      <div class="details-box">
+        <p><strong>Cast</strong><br>Sidharth Malhotra, Parineeti Chopra, Adah Sharma, Manoj Joshi, Madhuri Sanjeev, Sharat Saxena, Nina Kulkarni, and Anil Mange</p>
+      </div>
+    </div>
+
+    <div class="you-may-also-like-heading">You May Also Like</div>
+
+    <div class="scroll-wrapper">
+      <div class="arrow left-arrow" onclick="scrollLeft('scrollContainer')">&#10094;</div>
+      <div class="recommendation-scroll" id="scrollContainer">
+        <a href="https://www.netflix.com/in/title/80073188" target="_blank">
+          <img src="images/humpty.jpg" alt="Humpty Sharma Ki Dulhania" />
+        </a>
+        <a href="https://www.netflix.com/in/title/80078739" target="_blank">
+          <img src="images/img2.jpg" alt="Shaandaar" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81016193" target="_blank">
+          <img src="images/img3.jpg" alt="Bareilly Ki Barfi" />
+        </a>
+        <a href="https://www.netflix.com/in/title/80206847" target="_blank">
+          <img src="images/img4.jpg" alt="Jab Harry Met Sejal" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81633804" target="_blank">
+          <img src="images/img5.jpg" alt="Mission Majnu" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81294132" target="_blank">
+          <img src="images/img6.jpg" alt="Ginny weds sunny" />
+        </a>
+        <a href="https://www.netflix.com/in/title/80165857" target="_blank">
+          <img src="images/img7.jpg" alt="Mumbai Delhi Mumbai" />
+        </a>
+      </div>
+      <div class="arrow right-arrow" onclick="scrollRight('scrollContainer')">&#10095;</div>
+    </div>
+
+    <div class="you-may-also-like-heading">Trending Now</div>
+
+    <div class="scroll-wrapper">
+      <div class="arrow left-arrow" onclick="scrollLeft('trendingScroll')">&#10094;</div>
+      <div class="recommendation-scroll" id="trendingScroll">
+        <a href="https://www.netflix.com/in/title/81999621" target="_blank">
+          <img src="images/img8.jpg" alt="HIT" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81902061" target="_blank">
+          <img src="images/img9.jpg" alt="Chhaava" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81902059" target="_blank">
+          <img src="images/img10.jpg" alt="Retro" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81902062" target="_blank">
+          <img src="images/img11.jpg" alt="Good Bad Ugly" />
+        </a>
+        <a href="https://www.netflix.com/in/title/82006666" target="_blank">
+          <img src="images/img12.jpg" alt="Pushpa 2" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81681535" target="_blank">
+          <img src="images/img13.jpg" alt="When Life Gives You Tangerines" />
+        </a>
+        <a href="https://www.netflix.com/in/title/81704205" target="_blank">
+          <img src="images/img14.jpg" alt="Deva" />
+        </a>
+      </div>
+      <div class="arrow right-arrow" onclick="scrollRight('trendingScroll')">&#10095;</div>
+    </div>
+
+    <div class="you-may-also-like-heading">A plan to suit your needs</div>
+
+    <div class="details-grid">
+      <a href="https://www.netflix.com/signup/planform" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="details-box">
+          <p><strong>Mobile</strong></p>
+          <p>₹149/month</p>
+          <p>480p</p>
+          <p>Good for watching on your phone and tablet.</p>
+        </div>
+      </a>
+      <a href="https://www.netflix.com/signup/planform" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="details-box">
+          <p><strong>Basic</strong></p>
+          <p>₹199/month</p>
+          <p>720p</p>
+          <p>Watch on any device, in good quality.</p>
+        </div>
+      </a>
+      <a href="https://www.netflix.com/signup/planform" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="details-box">
+          <p><strong>Standard</strong></p>
+          <p>₹499/month</p>
+          <p>1080p</p>
+          <p>Great video quality for watching on your phone, tablet, laptop and TV.</p>
+        </div>
+      </a>
+      <a href="https://www.netflix.com/signup/planform" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="details-box">
+          <p><strong>Premium</strong></p>
+          <p>₹649/month</p>
+          <p>4K+HDR</p>
+          <p>Best quality with immersive sound for phone, tablet, laptop and TV.</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="netflix-discover-banner">
+      <div class="netflix-discover-overlay">
+        <h2>Discover your next favourites, plus new releases every week</h2>
+        <button>More About Netflix</button>
+      </div>
+    </div>
+
+    <div class="join-now-footer">
+      <a href="https://www.netflix.com/signup/planform" target="_blank">
+        <button>Join Now</button>
+      </a>
+    </div>
+    
+    <footer class="netflix-footer">
+      <p>Questions? Call <a href="#">000-800-919-1743</a></p>
+      <div class="footer-links">
+       <ul>
+         <li><a href="#">FAQ</a></li>
+         <li><a href="#">Media Centre</a></li>
+         <li><a href="#">Ways to Watch</a></li>
+         <li><a href="#">Cookie Preferences</a></li>
+         <li><a href="#">Speed Test</a></li>
+      </ul>
+      <ul>
+      <li><a href="#">Help Centre</a></li>
+      <li><a href="#">Investor Relations</a></li>
+      <li><a href="#">Terms of Use</a></li>
+      <li><a href="#">Corporate Information</a></li>
+      <li><a href="#">Legal Notices</a></li>
+    </ul>
+    <ul>
+      <li><a href="#">Account</a></li>
+      <li><a href="#">Jobs</a></li>
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Contact Us</a></li>
+      <li><a href="#">Only on Netflix</a></li>
+    </ul>
+  </div>
+  <div class="language-select">
+    <button><span class="globe-icon">🌐</span> English ⌄</button>
+  </div>
+  <p class="country-name">Netflix India</p>
+  <p class="recaptcha-note">This page is protected by Google reCAPTCHA to ensure you're not a bot. <a href="#">Learn more.</a></p>
+</footer>
+
+  </div>
+
+  <script>
+    function scrollLeft(id) {
+      document.getElementById(id).scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  
+    function scrollRight(id) {
+      document.getElementById(id).scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  
+    function scrollTrendingLeft() {
+      document.getElementById("trendingScroll").scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  
+    function scrollTrendingRight() {
+      document.getElementById("trendingScroll").scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  </script>
+  <script>
+    document.querySelector('.netflix-discover-banner button').addEventListener('click', function () {
+      window.open('https://www.netflix.com/in/', '_blank');
+    });
+  </script>
+  <script>
+    document.getElementById('join-button').addEventListener('click', function () {
+      const email = document.getElementById('email-input').value.trim();
+      if (email === '') {
+        alert('Please enter your email');
+      } else {
+        window.location.href = 'https://www.netflix.com/signup/registration?locale=en-IN';
+      }
+    });
+  </script>
+  
+</body>
+</html>
